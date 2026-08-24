@@ -8,7 +8,15 @@ import {
   User,
 } from '../types';
 
-const API_BASE = '/api';
+// Dynamically resolve API URL from VITE_API_URL (e.g. Render server URL) or default to local /api
+const rawApiUrl = ((import.meta as any).env?.VITE_API_URL || '').trim();
+const API_BASE = rawApiUrl
+  ? rawApiUrl.endsWith('/api')
+    ? rawApiUrl
+    : rawApiUrl.endsWith('/')
+    ? `${rawApiUrl}api`
+    : `${rawApiUrl}/api`
+  : '/api';
 
 export function getSessionId(): string {
   let sess = localStorage.getItem('unthinkable_session_id');

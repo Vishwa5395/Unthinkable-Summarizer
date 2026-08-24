@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: unthinkable-summarizer-server
+    env: node
+    plan: free
+    region: oregon
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: "*"
+      - key: AI_PROVIDER
+        value: deterministic
+      - key: EXTRACTION_PROVIDER
+        value: auto
+      - key: CRON_ENABLED
+        value: "true"
+      - key: CRON_CLEANUP_INTERVAL_MINUTES
+        value: "30"
