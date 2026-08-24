@@ -12,7 +12,7 @@
   "crons": [
     {
       "path": "/api/health/cron/run",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
