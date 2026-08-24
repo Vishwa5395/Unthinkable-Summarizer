@@ -103,7 +103,7 @@ export class PdfPageRenderer {
       // Create safe proxy for canvas context operations to prevent native binding crashes
       const origFill = ctx.fill.bind(ctx);
       ctx.fill = function (path?: any, fillRule?: any) {
-        if (path && typeof path === 'object' && !(path instanceof (globalThis.Path2D || Object))) {
+        if (path && typeof path === 'object' && !(path instanceof ((globalThis as any).Path2D || Object))) {
           return;
         }
         try {
@@ -117,7 +117,7 @@ export class PdfPageRenderer {
 
       const origStroke = ctx.stroke.bind(ctx);
       ctx.stroke = function (path?: any) {
-        if (path && typeof path === 'object' && !(path instanceof (globalThis.Path2D || Object))) {
+        if (path && typeof path === 'object' && !(path instanceof ((globalThis as any).Path2D || Object))) {
           return;
         }
         try {

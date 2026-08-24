@@ -1,6 +1,7 @@
 {
   "name": "unthinkable-summarizer-server",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Backend API for Unthinkable Summarizer",
   "main": "dist/server.js",

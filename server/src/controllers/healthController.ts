@@ -43,18 +43,7 @@ export function getCronStatus(_req: Request, res: Response): void {
 
 export async function triggerCronTask(req: Request, res: Response): Promise<void> {
   try {
-    const { task } = req.body;
-    if (!task) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'MISSING_TASK_NAME',
-          message: 'Please provide task name in body (e.g. file_session_cleanup, extraction_cache_prune, queue_stalled_jobs_recovery, system_metrics_heartbeat)',
-        },
-      });
-      return;
-    }
-
+    const task = (req.body?.task || req.query?.task || 'file_session_cleanup') as string;
     const summary = await cronSchedulerService.triggerTask(task);
     res.json({
       success: true,

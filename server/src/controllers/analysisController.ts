@@ -24,7 +24,7 @@ export async function getDocumentAnalysis(
       const dbDoc = await DocumentModel.findOne({ id }).lean();
       if (dbDoc) {
         doc = dbDoc as any;
-        memoryStore.saveDocument(doc);
+        if (doc) memoryStore.saveDocument(doc);
       }
     }
 
@@ -78,7 +78,7 @@ export async function getDocumentAnalysis(
       const dbAnalysis = await DocumentAnalysisModel.findOne({ documentId: id, mode }).lean();
       if (dbAnalysis) {
         analysis = dbAnalysis as any;
-        memoryStore.saveAnalysis(analysis);
+        if (analysis) memoryStore.saveAnalysis(analysis);
       }
     }
 
@@ -124,7 +124,7 @@ export async function triggerDocumentAnalysis(
       const dbDoc = await DocumentModel.findOne({ id }).lean();
       if (dbDoc) {
         doc = dbDoc as any;
-        memoryStore.saveDocument(doc);
+        if (doc) memoryStore.saveDocument(doc);
       }
     }
 
