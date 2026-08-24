@@ -179,11 +179,11 @@ From the project root:
 npm run dev
 
 # Or start individually:
-npm run dev:server   # Starts Express API at http://localhost:5000
-npm run dev:client   # Starts Vite Dev Server at http://localhost:5173
+npm run dev:server   # Starts Express API at https://unthinkable-summarizer.onrender.com
+npm run dev:client   # Starts Vite Dev Server at https://unthinkable-summarizer.onrender.com
 ```
 
-Visit **`http://localhost:5173`** in your browser.
+Visit **`https://unthinkable-summarizer.onrender.com`** in your browser.
 
 ### 3. Run Automated Tests
 ```bash
