@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Intelligent multimodal document analysis and summarization platform",
   "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "dev:server": "npm run dev --prefix server",
@@ -14,7 +18,8 @@
     "test": "npm run test --prefix server"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
   },
   "keywords": [
     "document-summarizer",
