@@ -129,6 +129,25 @@ export class ProcessingQueue {
     }
     return undefined;
   }
+
+  getActiveJobCount(): number {
+    return this.activeJobs.size;
+  }
+
+  getAllJobStatuses(): Array<{ documentId: string; status: ProcessingStatus; statusMessage: string; updatedAt: string }> {
+    const results: Array<{ documentId: string; status: ProcessingStatus; statusMessage: string; updatedAt: string }> = [];
+
+    for (const [docId, job] of this.activeJobs.entries()) {
+      results.push({
+        documentId: docId,
+        status: job.status,
+        statusMessage: job.statusMessage,
+        updatedAt: new Date(job.createdAt).toISOString(),
+      });
+    }
+
+    return results;
+  }
 }
 
 export const processingQueue = new ProcessingQueue();

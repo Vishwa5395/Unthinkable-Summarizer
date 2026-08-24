@@ -66,6 +66,26 @@ export class ExtractionCache {
   size(): number {
     return this.cache.size;
   }
+
+  getStats(): { entries: number; maxEntries: number; ttlHours: number } {
+    return {
+      entries: this.cache.size,
+      maxEntries: this.maxEntries,
+      ttlHours: this.ttlMs / (60 * 60 * 1000),
+    };
+  }
+
+  pruneExpired(): number {
+    const now = Date.now();
+    let count = 0;
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttlMs) {
+        this.cache.delete(key);
+        count++;
+      }
+    }
+    return count;
+  }
 }
 
 export const extractionCache = new ExtractionCache();

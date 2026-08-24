@@ -109,6 +109,15 @@ class MemoryStoreService {
     return this.chatMessages.get(contextId) || [];
   }
 
+  // Statistics
+  getStats(): { totalDocuments: number; totalSessions: number; totalAnalyses: number } {
+    return {
+      totalDocuments: this.documents.size,
+      totalSessions: this.sessions.size,
+      totalAnalyses: this.analyses.size,
+    };
+  }
+
   // TTL Pruning
   pruneExpired(): number {
     const now = new Date();

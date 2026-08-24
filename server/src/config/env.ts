@@ -42,6 +42,11 @@ const envSchema = z.object({
   OCR_PROVIDER: z.enum(['tesseract']).default('tesseract'),
   OCR_CONFIDENCE_THRESHOLD: z.coerce.number().default(60),
   OCR_ENABLE_HANDWRITING_ENHANCEMENT: z.coerce.boolean().default(true),
+
+  // Internal Cron Scheduler
+  CRON_ENABLED: z.coerce.boolean().default(true),
+  CRON_CLEANUP_INTERVAL_MINUTES: z.coerce.number().default(30),
+  CRON_HEARTBEAT_INTERVAL_MINUTES: z.coerce.number().default(15),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
