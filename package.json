@@ -17,7 +17,7 @@
     "start": "node server/dist/server.js",
     "test": "npm run test --prefix server"
   },
-  "devDependencies": {
+  "dependencies": {
     "concurrently": "^9.1.2",
     "typescript": "^5.7.3"
   },
