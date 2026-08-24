@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UNTHINKABLE SUMMARIZER — Intelligent Multimodal Document Analysis</title>
+    <meta name="description" content="Understand, summarize, explore, and query any PDF or image document with textual and visual intelligence." />
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('unthinkable_theme');
+          var theme = stored || 'system';
+          var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-paper-warm dark:bg-[#0e0e12] text-ink-950 dark:text-ink-50 font-sans antialiased selection:bg-ink-950 selection:text-paper-light dark:selection:bg-ink-100 dark:selection:text-ink-950 transition-colors duration-150">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

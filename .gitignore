@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build artifacts
+dist/
+build/
+*/dist/
+*/build/
+*.tsbuildinfo
+*/tsconfig.tsbuildinfo
+*/tsconfig.node.tsbuildinfo
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*/.env
+*/.env.*
+!*/.env.example
+
+# Logs
+*.log
+logs/
+*/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads & Temporary files
+uploads/
+temp/
+*/uploads/
+*/temp/
+coverage/
+*/coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large trained data models (downloaded at runtime by Tesseract)
+*.traineddata

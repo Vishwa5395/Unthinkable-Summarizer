@@ -1,0 +1,50 @@
+{
+  "name": "unthinkable-summarizer-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API for Unthinkable Summarizer",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.8",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.1",
+    "multer": "^1.4.5-lts.1",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.10.38",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "pino-pretty": "^13.0.0",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.13.4",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.6"
+  }
+}

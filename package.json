@@ -1,0 +1,29 @@
+{
+  "name": "unthinkable-summarizer",
+  "version": "1.0.0",
+  "description": "Intelligent multimodal document analysis and summarization platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build:client": "npm run build --prefix client",
+    "start": "node server/dist/server.js",
+    "test": "npm run test --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "document-summarizer",
+    "multimodal",
+    "ocr",
+    "pdf-analysis",
+    "vision",
+    "ai"
+  ],
+  "author": "Unthinkable Team",
+  "license": "MIT"
+}
