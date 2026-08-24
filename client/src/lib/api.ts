@@ -8,19 +8,37 @@ import {
   User,
 } from '../types';
 
-// Dynamically resolve API URL from VITE_API_BASE_URL / VITE_API_URL (e.g. Render server URL) or default to local /api
-const rawApiUrl = (
-  (import.meta as any).env?.VITE_API_BASE_URL ||
-  (import.meta as any).env?.VITE_API_URL ||
-  ''
-).trim();
-const API_BASE = rawApiUrl
-  ? rawApiUrl.endsWith('/api')
-    ? rawApiUrl
-    : rawApiUrl.endsWith('/')
-    ? `${rawApiUrl}api`
-    : `${rawApiUrl}/api`
-  : '/api';
+// Centralized API Base URL resolution
+export function getApiBaseUrl(): string {
+  const envUrl = (
+    (import.meta as any).env?.VITE_API_BASE_URL ||
+    (import.meta as any).env?.VITE_API_URL ||
+    ''
+  ).trim();
+
+  if (envUrl) {
+    return envUrl.endsWith('/api')
+      ? envUrl
+      : envUrl.endsWith('/')
+      ? `${envUrl}api`
+      : `${envUrl}/api`;
+  }
+
+  // In production deployments (e.g. Vercel), route directly to live Render backend
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    !window.location.hostname.includes('localhost') &&
+    !window.location.hostname.includes('127.0.0.1')
+  ) {
+    return 'https://unthinkable-summarizer.onrender.com/api';
+  }
+
+  // Local development default (backend server on port 5000)
+  return 'http://localhost:5000/api';
+}
+
+export const API_BASE = getApiBaseUrl();
 
 export function getSessionId(): string {
   let sess = localStorage.getItem('unthinkable_session_id');
