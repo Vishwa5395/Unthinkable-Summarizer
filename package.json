@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Intelligent multimodal document analysis and summarization platform",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0 <=22.x"
+  },
   "workspaces": [
     "client",
     "server"
@@ -20,6 +23,14 @@
   "dependencies": {
     "concurrently": "^9.1.2",
     "typescript": "^5.7.3"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas-darwin-arm64": "^1.0.8",
+    "@napi-rs/canvas-darwin-x64": "^1.0.8",
+    "@napi-rs/canvas-linux-arm64-gnu": "^1.0.8",
+    "@napi-rs/canvas-linux-x64-gnu": "^1.0.8",
+    "@napi-rs/canvas-linux-x64-musl": "^1.0.8",
+    "@napi-rs/canvas-win32-x64-msvc": "^1.0.8"
   },
   "keywords": [
     "document-summarizer",

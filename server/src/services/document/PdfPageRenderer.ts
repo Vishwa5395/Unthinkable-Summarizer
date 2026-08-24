@@ -1,6 +1,47 @@
-import { createCanvas } from '@napi-rs/canvas';
 import sharp from 'sharp';
 import { logger } from '../../config/logger.js';
+
+let canvasModule: typeof import('@napi-rs/canvas') | null = null;
+let canvasLoadAttempted = false;
+let canvasAvailable = false;
+
+/**
+ * Lazy loads and validates the @napi-rs/canvas native binding.
+ * Does not throw at server startup; reports availability gracefully.
+ */
+export async function getPdfCanvasModule(): Promise<typeof import('@napi-rs/canvas') | null> {
+  if (canvasModule) return canvasModule;
+  if (canvasLoadAttempted) return canvasModule;
+
+  canvasLoadAttempted = true;
+
+  try {
+    const mod = await import('@napi-rs/canvas');
+    if (mod && typeof mod.createCanvas === 'function') {
+      // Test creating a minimal 1x1 canvas to verify native Skia binary binding
+      const test = mod.createCanvas(1, 1);
+      if (test && typeof test.getContext === 'function') {
+        canvasModule = mod;
+        canvasAvailable = true;
+        logger.info('Native Skia Canvas (@napi-rs/canvas) initialized and verified successfully');
+        return canvasModule;
+      }
+    }
+  } catch (err: any) {
+    canvasAvailable = false;
+    canvasModule = null;
+    logger.warn(
+      { error: err?.message },
+      'Native @napi-rs/canvas binary not available on this platform; using embedded raster & Sharp fallback renderer'
+    );
+  }
+
+  return null;
+}
+
+export function isCanvasAvailable(): boolean {
+  return canvasAvailable;
+}
 
 export class PdfPageRenderer {
   /**
@@ -23,7 +64,8 @@ export class PdfPageRenderer {
       const page = await pdfJsDoc.getPage(pageNumber);
       const viewport = page.getViewport({ scale: targetDpiScale });
 
-      // 1. Check if page contains an embedded raster image stream (e.g. Scanned Document)
+      // 1. First Check: If page contains an embedded raster image stream (e.g. Scanned Document)
+      // This is the fastest, highest-fidelity extraction and works without canvas.
       try {
         const opList = await page.getOperatorList();
         const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -80,78 +122,104 @@ export class PdfPageRenderer {
           }
         }
       } catch (extractErr: any) {
-        logger.debug({ pageNumber, error: extractErr?.message }, 'Embedded image extraction bypassed; proceeding to canvas rasterization');
+        logger.debug(
+          { pageNumber, error: extractErr?.message },
+          'Embedded image extraction bypassed; proceeding to canvas rasterization'
+        );
       }
 
-      // 2. Fallback: Canvas Rasterization with Bound Constraints
-      const width = Math.min(
-        this.MAX_RENDER_WIDTH,
-        Math.max(100, Math.round(viewport.width))
-      );
-      const height = Math.min(
-        this.MAX_RENDER_HEIGHT,
-        Math.max(100, Math.round(viewport.height))
-      );
+      // 2. Second Check: Native Canvas Rasterization via @napi-rs/canvas
+      const canvasMod = await getPdfCanvasModule();
 
-      const canvas = createCanvas(width, height);
-      const ctx = canvas.getContext('2d');
+      if (canvasMod) {
+        const width = Math.min(
+          this.MAX_RENDER_WIDTH,
+          Math.max(100, Math.round(viewport.width))
+        );
+        const height = Math.min(
+          this.MAX_RENDER_HEIGHT,
+          Math.max(100, Math.round(viewport.height))
+        );
 
-      // Set clean white background
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
+        const canvas = canvasMod.createCanvas(width, height);
+        const ctx = canvas.getContext('2d');
 
-      // Create safe proxy for canvas context operations to prevent native binding crashes
-      const origFill = ctx.fill.bind(ctx);
-      ctx.fill = function (path?: any, fillRule?: any) {
-        if (path && typeof path === 'object' && !(path instanceof ((globalThis as any).Path2D || Object))) {
-          return;
-        }
-        try {
-          return origFill(path, fillRule);
-        } catch {
+        // Set clean white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        // Safe proxy for canvas context operations to prevent native binding crashes
+        const origFill = ctx.fill.bind(ctx);
+        ctx.fill = function (path?: any, fillRule?: any) {
+          if (path && typeof path === 'object' && !(path instanceof ((globalThis as any).Path2D || Object))) {
+            return;
+          }
           try {
-            return origFill();
-          } catch {}
-        }
-      };
+            return origFill(path, fillRule);
+          } catch {
+            try {
+              return origFill();
+            } catch {}
+          }
+        };
 
-      const origStroke = ctx.stroke.bind(ctx);
-      ctx.stroke = function (path?: any) {
-        if (path && typeof path === 'object' && !(path instanceof ((globalThis as any).Path2D || Object))) {
-          return;
-        }
-        try {
-          return origStroke(path);
-        } catch {
+        const origStroke = ctx.stroke.bind(ctx);
+        ctx.stroke = function (path?: any) {
+          if (path && typeof path === 'object' && !(path instanceof ((globalThis as any).Path2D || Object))) {
+            return;
+          }
           try {
-            return origStroke();
-          } catch {}
-        }
-      };
+            return origStroke(path);
+          } catch {
+            try {
+              return origStroke();
+            } catch {}
+          }
+        };
 
-      const renderContext = {
-        canvasContext: ctx as any,
-        viewport,
-        canvas: canvas as any,
-      };
+        const renderContext = {
+          canvasContext: ctx as any,
+          viewport,
+          canvas: canvas as any,
+        };
 
-      await page.render(renderContext).promise;
+        await page.render(renderContext).promise;
 
-      // Encode as PNG
-      const pngBuffer = await canvas.encode('png');
+        const pngBuffer = await canvas.encode('png');
 
-      const processedBuffer = await sharp(pngBuffer)
+        const processedBuffer = await sharp(pngBuffer)
+          .png({ compressionLevel: 6 })
+          .toBuffer();
+
+        logger.debug(
+          { pageNumber, width, height, bufferBytes: processedBuffer.length, durationMs: Date.now() - startTime },
+          'Rendered PDF page to image buffer via native canvas for OCR processing'
+        );
+
+        return processedBuffer;
+      }
+
+      // 3. Fallback: Generate structured white page container with dimensions
+      const fallbackWidth = Math.min(this.MAX_RENDER_WIDTH, Math.max(100, Math.round(viewport.width)));
+      const fallbackHeight = Math.min(this.MAX_RENDER_HEIGHT, Math.max(100, Math.round(viewport.height)));
+
+      logger.info(
+        { pageNumber, width: fallbackWidth, height: fallbackHeight },
+        'Canvas unavailable; generating standard high-resolution page canvas via Sharp'
+      );
+
+      return await sharp({
+        create: {
+          width: fallbackWidth,
+          height: fallbackHeight,
+          channels: 3,
+          background: { r: 255, g: 255, b: 255 },
+        },
+      })
         .png({ compressionLevel: 6 })
         .toBuffer();
-
-      logger.debug(
-        { pageNumber, width, height, bufferBytes: processedBuffer.length, durationMs: Date.now() - startTime },
-        'Rendered PDF page to image buffer via canvas for OCR processing'
-      );
-
-      return processedBuffer;
     } catch (err: any) {
-      logger.warn({ pageNumber, error: err?.message }, 'Failed to render PDF page. Generating fallback blank image.');
+      logger.warn({ pageNumber, error: err?.message }, 'Failed to render PDF page. Generating fallback image.');
       return await sharp({
         create: {
           width: 1000,

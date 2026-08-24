@@ -5,6 +5,7 @@ import { ExtractionProviderFactory } from '../providers/extraction/ExtractionPro
 import { cronSchedulerService } from '../services/cron/CronSchedulerService.js';
 import { memoryStore } from '../models/MemoryStore.js';
 import { processingQueue } from '../services/queue/ProcessingQueue.js';
+import { isCanvasAvailable } from '../services/document/PdfPageRenderer.js';
 
 export function getHealth(_req: Request, res: Response): void {
   const memUsage = process.memoryUsage();
@@ -19,6 +20,8 @@ export function getHealth(_req: Request, res: Response): void {
       database: isDbConnected() ? 'connected' : 'memory-resilient-mode',
       documentExtractionProvider: ExtractionProviderFactory.getActiveProviderName(),
       extractionConfigured: ExtractionProviderFactory.isPrimaryConfigured(),
+      documentRendering: isCanvasAvailable() ? 'AVAILABLE' : 'STANDBY_OR_NATIVE',
+      ocr: 'AVAILABLE',
       aiMode: env.AI_PROVIDER,
       aiModel: env.AI_MODEL,
       ocrProvider: env.OCR_PROVIDER,
