@@ -8,8 +8,12 @@ import {
   User,
 } from '../types';
 
-// Dynamically resolve API URL from VITE_API_URL (e.g. Render server URL) or default to local /api
-const rawApiUrl = ((import.meta as any).env?.VITE_API_URL || '').trim();
+// Dynamically resolve API URL from VITE_API_BASE_URL / VITE_API_URL (e.g. Render server URL) or default to local /api
+const rawApiUrl = (
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  (import.meta as any).env?.VITE_API_URL ||
+  ''
+).trim();
 const API_BASE = rawApiUrl
   ? rawApiUrl.endsWith('/api')
     ? rawApiUrl
