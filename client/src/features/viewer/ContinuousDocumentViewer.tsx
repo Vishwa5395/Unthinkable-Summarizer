@@ -42,7 +42,7 @@ export const ContinuousDocumentViewer: React.FC<ContinuousDocumentViewerProps> =
 
   const isPdf =
     document.mimeType.includes('pdf') || document.filename.toLowerCase().endsWith('.pdf');
-  const fileUrl = `/api/documents/${document.id}/file`;
+  const fileUrl = api.getDocumentFileUrl(document.id);
 
   // 1. Load PDF Document if applicable
   useEffect(() => {

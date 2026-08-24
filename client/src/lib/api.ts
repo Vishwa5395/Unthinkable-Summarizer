@@ -10,6 +10,7 @@ import {
 
 // Centralized API Base URL resolution
 export function getApiBaseUrl(): string {
+  // 1. Explicit Vite Environment Variable (e.g. from Vercel Project Settings or .env.production)
   const envUrl = (
     (import.meta as any).env?.VITE_API_BASE_URL ||
     (import.meta as any).env?.VITE_API_URL ||
@@ -17,24 +18,22 @@ export function getApiBaseUrl(): string {
   ).trim();
 
   if (envUrl) {
-    return envUrl.endsWith('/api')
-      ? envUrl
-      : envUrl.endsWith('/')
-      ? `${envUrl}api`
-      : `${envUrl}/api`;
+    const cleaned = envUrl.replace(/\/+$/, '');
+    return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`;
   }
 
-  // In production deployments (e.g. Vercel), route directly to live Render backend
+  // 2. Production Domain Detection (Vercel deployment or custom domain)
   if (
     typeof window !== 'undefined' &&
     window.location &&
+    window.location.hostname &&
     !window.location.hostname.includes('localhost') &&
     !window.location.hostname.includes('127.0.0.1')
   ) {
     return 'https://unthinkable-summarizer.onrender.com/api';
   }
 
-  // Local development default (backend server on port 5000)
+  // 3. Local Development Default (server on port 5000)
   return 'http://localhost:5000/api';
 }
 
@@ -64,6 +63,10 @@ export function setAuthToken(token: string | null): void {
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getAuthToken();
   const sessionId = getSessionId();
+  const apiBase = getApiBaseUrl();
+
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const fullUrl = `${apiBase}${cleanEndpoint}`;
 
   const headers: Record<string, string> = {
     'x-session-id': sessionId,
@@ -79,7 +82,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const res = await fetch(fullUrl, {
     ...options,
     headers,
   });
@@ -98,6 +101,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
+  getApiBaseUrl,
+
+  getDocumentFileUrl(id: string): string {
+    const apiBase = getApiBaseUrl();
+    return `${apiBase}/documents/${id}/file`;
+  },
+
   async uploadFiles(files: File[]): Promise<{ sessionId: string; documents: UnifiedDocument[] }> {
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
